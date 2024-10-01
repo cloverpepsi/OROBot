@@ -1,3 +1,5 @@
 DB/Private/
 *.pyc
 *.json
+__pycache__
+Cogs/__pycache__
