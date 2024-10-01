@@ -45,13 +45,13 @@ class Respond(cmd.Cog):
 				currentPromptResponses[str(userID)]=response
 			if not IS_EDIT and len(currentPromptResponses)==2:
 				channel = self.BOT.get_channel(1290461645172244588)
-				await channel.send(f"# :exclamation: Prompt #{str(num)} is now in play!\n**```{prompts[num]}```**")
+				await channel.send(f"**========================================**\n# :exclamation: Prompt #{str(num)} is now in play!\n**```{prompts[num]}```========================================**")
 			elif not IS_EDIT and len(currentPromptResponses)==1:
 				channel = self.BOT.get_channel(1290461645172244588)
 				await channel.send(f"Prompt #{str(num)} has received its first response.\n`{prompts[num]}`")
 			json.dump(responsesDB,open('DB/Private/responses.json','w'),indent=4)
 
-		message = (f'Success! Your response to the following prompt:\n`{prompts[num]}`\n'
+		message = (f'Success! Your {"edit" if IS_EDIT else "response"} to the following prompt:\n`{prompts[num]}`\n'
 				+f'has been recorded as:\n`{response}`')
 		await ctx.reply(message)
 

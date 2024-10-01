@@ -1,4 +1,4 @@
-import nltk, random, json, re
+import nltk, random, json, re, os
 nltk.download('punkt_tab')
 from nltk.tokenize.treebank import TreebankWordDetokenizer
 import discord as dc
@@ -77,8 +77,25 @@ class Prompt(cmd.Cog):
 		await ctx.reply(f'The prompt for R{round_num} is ```{prompt}```')
 		return	
 
+	@cmd.command()
+	@cmd.cooldown(1,5,cmd.BucketType.user)
+	async def get_prompts(self, ctx, min_responses=1, max_responses=999):
 
+		prompt_dict = json.load(open('DB/prompts.json', 'r'))
+		response_dict = json.load(open('DB/Private/responses.json','r'))
 
+		filtered_prompts = []
+
+		for round_num in sorted([int(x) for x in prompt_dict.keys()]):
+			round_num = str(round_num)
+			if round_num in response_dict.keys():
+				respcount = len(response_dict[round_num])
+				if respcount >= min_responses and respcount <= max_responses:
+					filtered_prompts.append([str(round_num), str(respcount), prompt_dict[round_num]])
+
+		open("prompt_list.txt","w",encoding="utf-8").write("\n".join(["\t".join(x) for x in filtered_prompts]))
+		await ctx.reply(f"Here's a list of all prompts with **{min_responses}** to **{max_responses}** responses. (Columns: round #, response count, prompt text)",file=dc.File("prompt_list.txt"))
+		os.remove("prompt_list.txt")
 
 
 
