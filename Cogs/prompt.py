@@ -1,0 +1,82 @@
+import nltk, random, json, re
+from nltk.tokenize.treebank import TreebankWordDetokenizer
+import discord as dc
+from discord.ext import commands as cmd
+from __helper import *
+
+print("Context Index generating...")
+try:
+	contextIndex = nltk.ContextIndex([word.lower() for word in nltk.corpus.brown.words()])
+except:
+	nltk.download('brown')
+	nltk.download('punkt')
+	contextIndex = nltk.ContextIndex([word.lower() for word in nltk.corpus.brown.words()])
+
+print("Done!")
+promptList = [x for x in open("DB/sample_prompts.txt",encoding="UTF-8").readlines() if len(x) < 500]
+
+def setup(BOT):
+	BOT.add_cog(Prompt(BOT))
+
+def get_prompt(seed):
+
+	random.seed(int(seed))
+
+	prompt = random.choice(promptList).strip()
+
+	tokens = nltk.word_tokenize(prompt)
+	for wordx in range(len(tokens)):
+
+		token = tokens[wordx]
+
+		if len(token) == 1:
+			continue
+		elif not re.match('\w',tokens[wordx]):
+			continue
+
+		try:
+			tokens[wordx] = random.choice([x for x in contextIndex.similar_words(token,8) if re.match("\w",x)]+[token])
+		except:
+			print(token, wordx)
+			pass
+
+	return TreebankWordDetokenizer().detokenize(tokens).replace(" . ", ". ").replace("’", "'").replace("s '", "s'").replace(" ' ", "'")
+
+class Prompt(cmd.Cog):
+
+	@cmd.slash_command(name="prompt")
+	@cmd.cooldown(1, 5, cmd.BucketType.user)
+	async def slash_prompt(self, ctx, seed=1):
+		await self.prompt(ctx,seed=seed)
+		return
+
+	@cmd.command()
+	@cmd.cooldown(1,5,cmd.BucketType.user)
+	async def prompt(self, ctx, round_num=1):
+
+		round_num = str(round_num)
+
+		if not is_whole(round_num) or int(round_num) < 1:
+			await ctx.reply("The round number must be a positive integer!")
+
+		prompt_dict = json.load(open('DB/prompts.json'))
+
+		if round_num in prompt_dict.keys():
+			prompt = prompt_dict[round_num]
+			
+		else:
+			prompt = get_prompt(round_num)
+			prompt_dict[round_num] = prompt
+			open("DB/prompts.json","w").write(json.dumps(prompt_dict,indent="\t"))
+			
+
+		await ctx.reply(f'The prompt for R{round_num} is ```{prompt}```')
+		return	
+
+
+
+
+
+
+
+
