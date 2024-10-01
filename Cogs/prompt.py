@@ -59,6 +59,7 @@ class Prompt(cmd.Cog):
 
 		if not is_whole(round_num) or int(round_num) < 1:
 			await ctx.reply("The round number must be a positive integer!")
+			return
 
 		prompt_dict = json.load(open('DB/prompts.json'))
 		print('ok')
