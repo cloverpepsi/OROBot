@@ -14,7 +14,6 @@ PREFIX = "!"
 intents = Intents.default()
 intents.members = True
 intents.message_content = True
-updateDBLock = threading.Lock()
 
 BOT = bridge.Bot(command_prefix="!", intents=intents) 
 BOT.allowed_mentions = AllowedMentions(replied_user=False)
@@ -98,28 +97,6 @@ async def on_application_command(ctx):
 
 print("="*50, '\n')
 
-@BOT.command()
-@commands.dm_only()
-async def respond(ctx,num,*,response):
-	with open('DB/prompts.json','r') as f:
-		prompts = json.load(f)
-	if num not in prompts:
-		await ctx.send("Error! Invalid prompt index!")
-		return
-	words = re.split('\s+',response.rstrip())
-	if len(words)>10:
-		await ctx.send(f"Error! Your response has {str(len(words))}, which is above the limit!")
-		return
-	with updateDBLock:
-		with open('DB/Private/responses.json','r+') as f:
-			responsesDB = json.load(f)
-			currentPromptResponses = responsesDB[num]
-			userID = ctx.message.author.id
-			currentPromptResponses[userID]=response
-			json.dump(responsesDB,f,indent=4)
-	message = (f'Success! Your response to the following prompt:\n`{prompts[num]}`\n'
-			+f'has been recorded as:\n`{response}`')
-	await ctx.send(message)
 		
 
 cogs_loaded = []
