@@ -1,4 +1,5 @@
 import nltk, random, json, re
+nltk.download('punkt_tab')
 from nltk.tokenize.treebank import TreebankWordDetokenizer
 import discord as dc
 from discord.ext import commands as cmd
@@ -60,13 +61,15 @@ class Prompt(cmd.Cog):
 			await ctx.reply("The round number must be a positive integer!")
 
 		prompt_dict = json.load(open('DB/prompts.json'))
-
+		print('ok')
 		if round_num in prompt_dict.keys():
 			prompt = prompt_dict[round_num]
 			
 		else:
+			print('ok2')
 			prompt = get_prompt(round_num)
 			prompt_dict[round_num] = prompt
+			print(prompt_dict)
 			open("DB/prompts.json","w").write(json.dumps(prompt_dict,indent="\t"))
 			
 

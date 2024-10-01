@@ -1,1 +1,3 @@
 DB/Private/
+*.pyc
+*.json
