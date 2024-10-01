@@ -285,6 +285,19 @@ def is_whole(s):
 	except:
 		return False
 
+def is_numerical(s):
+	return re.sub("[0-9]", str(s), "") == ""
+
+def to_sci(s):
+
+	s = str(s).split(".")[0]
+	if re.sub("[0-9]", s, "") != "":
+		return None
+
+	exp = len(s)-1
+	left = s[0]+"."+s[1:1000]
+	return str(left)+"x10^"+str(exp)
+
 def is_number(s):
 	'''
 	Shorthand to check if a string can be parsed as a number.
