@@ -1,4 +1,4 @@
-import nltk, random, json, re
+import nltk, random, json, re, os
 from nltk.tokenize.treebank import TreebankWordDetokenizer
 import discord as dc
 from discord.ext import commands as cmd
@@ -56,19 +56,45 @@ class Respond(cmd.Cog):
 				currentPromptResponses = responsesDB[num]
 				userID = command_user(ctx).id
 				IS_EDIT = str(userID) in currentPromptResponses
-				print(IS_EDIT)
 				currentPromptResponses[str(userID)]=response
 			if not IS_EDIT and len(currentPromptResponses)==2:
 				channel = self.BOT.get_channel(1290461645172244588)
-				await channel.send(f"**========================================**\n# :exclamation: Prompt #{short_num} is now in play!\n**```{prompts[num]}```========================================**")
+				await channel.send(f"**========================================**\n# :exclamation: Round #{short_num} is now in play!\n**```{prompts[num]}```========================================**")
 			elif not IS_EDIT and len(currentPromptResponses)==1:
 				channel = self.BOT.get_channel(1290461645172244588)
-				await channel.send(f"Prompt #{short_num} has received its first response.\n`{prompts[num]}`")
+				await channel.send(f"Round #{short_num} has received its first response. Prompt: `{prompts[num]}`")
 			json.dump(responsesDB,open('DB/Private/responses.json','w'),indent=4)
 
 		message = (f'Success! Your {"edit" if IS_EDIT else "response"} to the following prompt:\n`{prompts[num]}`\n'
 				+f'has been recorded as:\n`{response}`')
 		await ctx.reply(message)
+
+
+	@cmd.slash_command(name="get_responses")
+	@cmd.cooldown(1, 5, cmd.BucketType.user)
+	@cmd.dm_only()
+	async def slash_get_responses(self, ctx):
+		await self.get_responses(ctx)
+		return
+
+	@cmd.command()
+	@cmd.cooldown(1,5,cmd.BucketType.user)
+	@cmd.dm_only()
+	async def get_responses(self, ctx):
+
+		response_dict = json.load(open('DB/Private/responses.json','r'))
+		userid = str(command_user(ctx).id)
+
+		filtered_responses = []
+
+		for round_num in sorted([int(x) for x in response_dict.keys()]):
+			round_num = str(round_num)
+			if userid in response_dict[round_num].keys():
+				filtered_responses.append([str(round_num), response_dict[round_num][userid]])
+
+		open("response_list.txt","w",encoding="utf-8").write("\n".join(["\t".join(x) for x in filtered_responses]))
+		await ctx.reply(f"Here's a list of all prompts you've responded to.",file=dc.File("response_list.txt"))
+		os.remove("response_list.txt")
 
 
 
