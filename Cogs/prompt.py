@@ -30,13 +30,26 @@ def get_prompt(seed):
 
 		token = tokens[wordx]
 
+		try: 
+			upperFirst = token[0].upper() == token[0]
+		except:
+			upperFirst = True
+		try: 
+			upperAll = token[1].upper() == token[1]
+		except:
+			upperAll = False
+
+		token = token.lower()
+
 		if len(token) == 1:
 			continue
 		elif not re.match('\w',tokens[wordx]):
 			continue
 
 		try:
-			tokens[wordx] = random.choice([x for x in contextIndex.similar_words(token,8) if re.match("\w",x)]+[token])
+			got_word = random.choice([x for x in contextIndex.similar_words(token,8) if re.match("\w",x)]+[token])
+			tokens[wordx] = (got_word[0].upper() if upperFirst else got_word[0]) + (got_word[1:].upper() if upperAll else got_word[1:])
+
 		except:
 			print(token, wordx)
 			pass
@@ -67,19 +80,19 @@ class Prompt(cmd.Cog):
 			return
 
 		prompt_dict = json.load(open('DB/prompts.json'))
-		print('ok')
+
 		if round_num in prompt_dict.keys():
 			prompt = prompt_dict[round_num]
 			
 		else:
-			print('ok2')
+
 			prompt = get_prompt(round_num)
 			prompt_dict[round_num] = prompt
-			print(prompt_dict)
+
 			open("DB/prompts.json","w").write(json.dumps(prompt_dict,indent="\t"))
 			
 
-		await ctx.reply(f'The prompt for R{short_num} is ```{prompt}```')
+		await ctx.reply(f'The prompt for Round #{short_num} is ```{prompt}```')
 		return	
 
 	@cmd.slash_command(name="get_prompts")
