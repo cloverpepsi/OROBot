@@ -23,32 +23,47 @@ class Respond(cmd.Cog):
 	@cmd.cooldown(1,5,cmd.BucketType.user)
 	@cmd.dm_only()
 	async def respond(self,ctx,num,*,response):
+
+		num = str(num)
+		short_num = to_sci(num) if len(num) > 1000 else num
+
 		with open('DB/prompts.json','r') as f:
 			prompts = json.load(f)
-		if str(num) not in prompts:
-			await ctx.reply("Error! Invalid prompt index!")
+
+		if not is_numerical(num) or int(num) < 1:
+			await ctx.reply("The round number must be a positive integer!")
 			return
+		if len(num) > 4000:
+			await ctx.reply("I know we said there were infinite prompts, but we can't allow an index this high due to Discord's limits. Sorry.")
+			return
+		if num not in prompts:
+			await ctx.reply("This prompt hasn't been generated yet!")
+			return
+
 		words = re.split('\s+',response.rstrip())
 		if len(words)>10:
-			await ctx.reply(f"Error! Your response has {str(len(words))} words, which is above the limit!")
+			await ctx.reply(f"Your response has {str(len(words))} words, which is above the limit.")
 			return
+		if len(response) > 1000:
+			await ctx.reply(f"Your response is {len(response)} characters long, which is above the limit of 1000.")
+
 		with updateDBLock:
 			with open('DB/Private/responses.json','r+') as f:
 				responsesDB = json.load(f)
 
-				if str(num) not in responsesDB.keys():
-					responsesDB[str(num)] = {}
-				currentPromptResponses = responsesDB[str(num)]
-				userID = ctx.message.author.id
+				if num not in responsesDB.keys():
+					responsesDB[num] = {}
+				currentPromptResponses = responsesDB[num]
+				userID = command_user(ctx).id
 				IS_EDIT = str(userID) in currentPromptResponses
 				print(IS_EDIT)
 				currentPromptResponses[str(userID)]=response
 			if not IS_EDIT and len(currentPromptResponses)==2:
 				channel = self.BOT.get_channel(1290461645172244588)
-				await channel.send(f"**========================================**\n# :exclamation: Prompt #{str(num)} is now in play!\n**```{prompts[num]}```========================================**")
+				await channel.send(f"**========================================**\n# :exclamation: Prompt #{short_num} is now in play!\n**```{prompts[num]}```========================================**")
 			elif not IS_EDIT and len(currentPromptResponses)==1:
 				channel = self.BOT.get_channel(1290461645172244588)
-				await channel.send(f"Prompt #{str(num)} has received its first response.\n`{prompts[num]}`")
+				await channel.send(f"Prompt #{short_num} has received its first response.\n`{prompts[num]}`")
 			json.dump(responsesDB,open('DB/Private/responses.json','w'),indent=4)
 
 		message = (f'Success! Your {"edit" if IS_EDIT else "response"} to the following prompt:\n`{prompts[num]}`\n'

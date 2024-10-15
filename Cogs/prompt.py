@@ -47,8 +47,8 @@ class Prompt(cmd.Cog):
 
 	@cmd.slash_command(name="prompt")
 	@cmd.cooldown(1, 5, cmd.BucketType.user)
-	async def slash_prompt(self, ctx, seed=1):
-		await self.prompt(ctx,seed=seed)
+	async def slash_prompt(self, ctx, round_num=1):
+		await self.prompt(ctx,round_num=round_num)
 		return
 
 	@cmd.command()
@@ -56,9 +56,14 @@ class Prompt(cmd.Cog):
 	async def prompt(self, ctx, round_num=1):
 
 		round_num = str(round_num)
+		short_num = to_sci(round_num) if len(round_num) > 1000 else round_num
 
-		if not is_whole(round_num) or int(round_num) < 1:
+		if not is_numerical(round_num) or int(round_num) < 1:
 			await ctx.reply("The round number must be a positive integer!")
+			return
+
+		if len(round_num) > 4000:
+			await ctx.reply("I know we said there were infinite prompts, but we can't allow an index this high due to Discord's limits. Sorry.")
 			return
 
 		prompt_dict = json.load(open('DB/prompts.json'))
@@ -74,8 +79,14 @@ class Prompt(cmd.Cog):
 			open("DB/prompts.json","w").write(json.dumps(prompt_dict,indent="\t"))
 			
 
-		await ctx.reply(f'The prompt for R{round_num} is ```{prompt}```')
+		await ctx.reply(f'The prompt for R{short_num} is ```{prompt}```')
 		return	
+
+	@cmd.slash_command(name="get_prompts")
+	@cmd.cooldown(1, 5, cmd.BucketType.user)
+	async def slash_get_prompts(self, ctx, min_responses=1, max_responses=999):
+		await self.get_prompts(ctx, min_responses, max_responses)
+		return
 
 	@cmd.command()
 	@cmd.cooldown(1,5,cmd.BucketType.user)
