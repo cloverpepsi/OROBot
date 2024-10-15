@@ -57,7 +57,7 @@ def generateVotingCollections():
         numResponses = len(responsesDB[promptID])
         if numResponses in numResponsesDict:
             numResponsesDict[numResponses].append(promptID)
-        else:
+        elif numResponses>1:
             allNumbersOfResponses.append(numResponses)
             numResponsesDict[numResponses] = [promptID]
     allNumbersOfResponses.sort()
