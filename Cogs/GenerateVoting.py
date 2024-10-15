@@ -2,7 +2,7 @@ from random import shuffle, choice
 import json
 import csv
 
-
+def setup(BOT): return
 
 # gets all Unicode characters that will be used as keyletters
 def getUniTable(numResponses):
