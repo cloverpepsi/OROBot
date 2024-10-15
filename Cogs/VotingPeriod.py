@@ -134,8 +134,7 @@ def addVote(userID,keyword,letters):
             if alreadyVotedOnScreen:
                 message=f"Success! Your vote on screen `{keyword}` has been edited to `{letters}`!"
             # check if they've voted on all screens in the section
-            screensUserHasVotedOn = [screen for screen in votesDB[userID]['screens']]
-            if all([keyword in screensUserHasVotedOn for keyword in allScreens]):
+            if len(votesDB[userID]['screens'])==len(allScreens):
                 message+=f"\nYou have voted on every screen!"
                 message+=f"\nYou can access the supervoter channel with `!supervoter`."
     return message
