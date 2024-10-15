@@ -42,13 +42,13 @@ def sopL(messageString):
 
 # screens DB is formatted like {keyword: {A: response, B: response, etc}}
 # votes DB is formatted like {userID: {screens: {keywordA: vote, keywordB: vote, etc}, supervoterAccess: false}}
-def createVotingDBs(allScreens):
-    with open(getScreensFileName(),'w') as f:
-        json.dump(allScreens,f,indent=4)
+
+def createVotesDB():
     with open(getVotesFileName(),'w') as f:
         votesDB = {}
         json.dump(votesDB,f,indent=4)
 
+# screens DB is already created
 def getScreensDB():
     with open(getScreensFileName(),'r') as f:
         screensDB = json.load(f)
