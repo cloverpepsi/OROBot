@@ -109,4 +109,4 @@ def generateAllOfVoting():
 	sections,screens = generateVotingCollections()
 	generateVotingFiles(sections,screens)
 
-generateAllOfVoting()
+#generateAllOfVoting()

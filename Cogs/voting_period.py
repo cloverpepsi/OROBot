@@ -180,17 +180,6 @@ def clearVotes(userID):
 		updateVotesDB(votesDB)
 		return "Success! All your votes have been deleted!"
 
-def viewVotes(userID):
-	votesDB = getVotesDB()
-	# make sure user has already sent at least one vote
-	if userID not in votesDB:
-		return 'Error! You have not sent any votes yet!'
-	message = "Here is a list of your votes:"
-	userVotes = votesDB[userID]['screens']
-	for keyword in userVotes:
-		message += f'\n`{keyword} {userVotes[keyword]}`'
-	return message
-
 def hasSupervoted(userID):
 	votesDB = getVotesDB()
 	screensDB = getScreensDB()
@@ -217,11 +206,58 @@ class Vote(cmd.Cog):
 	async def vote(self, ctx, *, votes):
 		
 		allVotes = [re.sub("[\\[\\]]", "", x) for x in re.findall("\\[.+?\\]", votes)]
+
 		response = []
 		for vote in allVotes:
-			response.append(addVote(command_user(ctx).id, vote.split(" ")[0], vote.split(' ')[1]))
-			
-		await ctx.reply("\n".join(response))
-		
+			try:
+				response.append(addVote(str(command_user(ctx).id), vote.split(" ")[0], vote.split(' ')[1]))
+			except:
+				response.append(f"Error: `{vote}` is malformed!")
+
+		messages = []
+		currentMsg = ""
+		for msg in response:
+			if len(currentMsg+"\n"+msg) < 2000:
+				currentMsg = currentMsg + "\n" + msg
+			else:
+				messages.append(currentMsg)
+				currentMsg = ""
+		messages.append(currentMsg)
+				
+
+		for msg in messages: await ctx.reply(msg)
+
+	@cmd.command()
+	@cmd.cooldown(1,1,cmd.BucketType.user)
+	@cmd.dm_only()
+	async def view_votes(self, ctx):
+		votesDB = getVotesDB()
+		userID = str(command_user(ctx).id)
+		# make sure user has already sent at least one vote
+		if userID not in votesDB:
+			await ctx.reply('Error! You have not sent any votes yet!')
+			return
+		message = ["Here is a list of your votes:"]
+		userVotes = votesDB[userID]['screens']
+		for keyword in userVotes:
+			message.append(f'`{keyword} {userVotes[keyword]}`')
+		messages = []
+		currentMsg = ""
+		for msg in message:
+			if len(currentMsg+"\n"+msg) < 2000:
+				currentMsg = currentMsg + "\n" + msg
+			else:
+				messages.append(currentMsg)
+				currentMsg = ""
+		messages.append(currentMsg)
+				
+
+		for msg in messages: await ctx.reply(msg)
+	
+	@cmd.command()
+	@cmd.cooldown(1,1,cmd.BucketType.user)
+	@cmd.dm_only()
+	async def remove_vote(self, ctx, keyword):
+		await ctx.reply(deleteVote(str(command_user(ctx).id), keyword.upper()))
 		
 

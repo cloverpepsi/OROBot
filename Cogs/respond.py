@@ -24,6 +24,9 @@ class Respond(cmd.Cog):
 	@cmd.dm_only()
 	async def respond(self,ctx,num,*,response):
 
+		await ctx.reply("Responding has closed!")
+		return
+
 		num = str(num)
 		short_num = to_sci(num) if len(num) > 1000 else num
 
@@ -95,11 +98,4 @@ class Respond(cmd.Cog):
 		open("response_list.txt","w",encoding="utf-8").write("\n".join(["\t".join(x) for x in filtered_responses]))
 		await ctx.reply(f"Here's a list of all prompts you've responded to.",file=dc.File("response_list.txt"))
 		os.remove("response_list.txt")
-
-
-
-
-
-
-
 
